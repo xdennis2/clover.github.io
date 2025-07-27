@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -37,7 +39,382 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Aquí iría todo el contenido del HTML previamente proporcionado -->
-    <!-- Por motivos de espacio, este es solo un encabezado del archivo -->
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+                <div class="text-2xl font-bold text-gray-800">POWER<span class="text-red-600">GYM</span></div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#" class="text-gray-800 hover:text-red-600 font-medium">Productos</a>
+                    <a href="#" class="text-gray-800 hover:text-red-600 font-medium">Equipamiento</a>
+                    <a href="#" class="text-gray-800 hover:text-red-600 font-medium">Sobre Nosotros</a>
+                    <a href="#" class="text-gray-800 hover:text-red-600 font-medium">Contacto</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="cart-button" class="relative p-2 text-gray-700 hover:text-red-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">EQUIPAMIENTO PROFESIONAL <span class="text-red-500">PARA GIMNASIOS</span></h1>
+                <p class="text-lg text-gray-300 mb-8">Fabricado con los más altos estándares de calidad para entrenamiento de alto rendimiento.</p>
+                <a href="#products" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 inline-block">Ver Productos</a>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <img src="https://placehold.co/600x400?text=Hero+Gym+Equipment" alt="Modern gym equipment setup with weight plates, barbells and racks in a professional training facility" class="rounded-lg shadow-xl" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">NUESTROS PRODUCTOS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Product 1 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 relative">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x400?text=Olympic+Barbell" alt="Professional Olympic barbell with chrome finish and knurled grip for weightlifting" class="w-full h-48 object-cover" />
+                        <span class="discount-badge">-15% con código</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Barra Olímpica Elite</h3>
+                        <p class="text-gray-600 mb-4">Barra de 20kg con marcado central para levantamientos de potencia.</p>
+                        <div class="flex items-center mb-4">
+                            <span class="text-2xl font-bold">$299.00</span>
+                            <span class="text-sm text-gray-500 line-through ml-2">$349.00</span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="discount-code-1" class="block text-sm font-medium text-gray-700 mb-1">Código de descuento</label>
+                            <div class="flex">
+                                <input type="text" id="discount-code-1" class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm" placeholder="Ej: POWER15">
+                                <button onclick="applyDiscount('product-1', 'discount-code-1')" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-r-md text-sm font-medium">Aplicar</button>
+                            </div>
+                            <p id="discount-message-1" class="text-xs mt-1 text-green-600 hidden">Descuento aplicado!</p>
+                        </div>
+                        <button onclick="addToCart('product-1', 'Barra Olímpica Elite', 299, 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/13cdeb80-d059-4b56-9c31-d415a65626f5.png')" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 rounded-md transition duration-300">Agregar al carrito</button>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 relative">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x400?text=Bumper+Plates" alt="Set of professional bumper plates in different colors and weights for crossfit training" class="w-full h-48 object-cover" />
+                        <span class="discount-badge">-10% con código</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Discos de Caucho</h3>
+                        <p class="text-gray-600 mb-4">Set de 4 discos (10kg, 15kg, 20kg, 25kg) color premium.</p>
+                        <div class="flex items-center mb-4">
+                            <span class="text-2xl font-bold">$599.00</span>
+                            <span class="text-sm text-gray-500 line-through ml-2">$659.00</span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="discount-code-2" class="block text-sm font-medium text-gray-700 mb-1">Código de descuento</label>
+                            <div class="flex">
+                                <input type="text" id="discount-code-2" class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm" placeholder="Ej: GYM10">
+                                <button onclick="applyDiscount('product-2', 'discount-code-2')" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-r-md text-sm font-medium">Aplicar</button>
+                            </div>
+                            <p id="discount-message-2" class="text-xs mt-1 text-green-600 hidden">Descuento aplicado!</p>
+                        </div>
+                        <button onclick="addToCart('product-2', 'Discos de Caucho', 599, 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/a6694b5e-36bf-4326-8839-0498b3f7f2b8.png')" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 rounded-md transition duration-300">Agregar al carrito</button>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300 relative">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x400?text=Squat+Rack" alt="Commercial grade squat rack with safety bars and pull-up station for home gym" class="w-full h-48 object-cover" />
+                        <span class="discount-badge">-20% con código</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Rack de Sentadillas Pro</h3>
+                        <p class="text-gray-600 mb-4">Estructura robusta para levantamientos pesados con barras de seguridad.</p>
+                        <div class="flex items-center mb-4">
+                            <span class="text-2xl font-bold">$1,199.00</span>
+                            <span class="text-sm text-gray-500 line-through ml-2">$1,499.00</span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="discount-code-3" class="block text-sm font-medium text-gray-700 mb-1">Código de descuento</label>
+                            <div class="flex">
+                                <input type="text" id="discount-code-3" class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm" placeholder="Ej: PRO20">
+                                <button onclick="applyDiscount('product-3', 'discount-code-3')" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-r-md text-sm font-medium">Aplicar</button>
+                            </div>
+                            <p id="discount-message-3" class="text-xs mt-1 text-green-600 hidden">Descuento aplicado!</p>
+                        </div>
+                        <button onclick="addToCart('product-3', 'Rack de Sentadillas Pro', 1199, 'https://placehold.co/400x300')" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-2 rounded-md transition duration-300">Agregar al carrito</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Panel (Hidden by default) -->
+    <div id="cart-panel" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-lg transform translate-x-full z-50 overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Tu Carrito</h2>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="cart-items" class="mb-6 border-b pb-6">
+                <!-- Cart items will be added here dynamically -->
+            </div>
+            <div class="mb-6">
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span id="cart-subtotal" class="font-medium">$0.00</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">Descuentos</span>
+                    <span id="cart-discounts" class="font-medium text-green-600">$0.00</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold mt-4 pt-4 border-t">
+                    <span>Total</span>
+                    <span id="cart-total">$0.00</span>
+                </div>
+            </div>
+            <button id="checkout-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium transition duration-300">Finalizar Compra</button>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">POWER<span class="text-red-600">GYM</span></h3>
+                    <p class="text-gray-400">Equipamiento profesional para gimnasios y atletas de alto rendimiento.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contacto</h4>
+                    <p class="text-gray-400 mb-2">info@powergym.com</p>
+                    <p class="text-gray-400">+1 234 567 890</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Redes Sociales</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">Instagram</a>
+                        <a href="#" class="text-gray-400 hover:text-white">Facebook</a>
+                        <a href="#" class="text-gray-400 hover:text-white">Twitter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2023 PowerGym. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Product discounts data
+        const discountCodes = {
+            'POWER15': { productIds: ['product-1'], discount: 0.15 },
+            'GYM10': { productIds: ['product-2'], discount: 0.1 }, 
+            'PRO20': { productIds: ['product-3'], discount: 0.2 }
+        };
+
+        // Cart functionality
+        let cart = [];
+        let appliedDiscounts = {};
+
+        // DOM elements
+        const cartButton = document.getElementById('cart-button');
+        const closeCartButton = document.getElementById('close-cart');
+        const cartPanel = document.getElementById('cart-panel');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const cartCount = document.getElementById('cart-count');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartSubtotal = document.getElementById('cart-subtotal');
+        const cartDiscounts = document.getElementById('cart-discounts');
+        const cartTotal = document.getElementById('cart-total');
+        const checkoutButton = document.getElementById('checkout-button');
+
+        // Toggle cart visibility
+        cartButton.addEventListener('click', () => {
+            cartPanel.classList.remove('translate-x-full');
+            cartPanel.classList.add('translate-x-0');
+            cartOverlay.classList.remove('hidden');
+        });
+
+        closeCartButton.addEventListener('click', () => {
+            cartPanel.classList.add('translate-x-full');
+            cartPanel.classList.remove('translate-x-0');
+            cartOverlay.classList.add('hidden');
+        });
+
+        cartOverlay.addEventListener('click', () => {
+            cartPanel.classList.add('translate-x-full');
+            cartPanel.classList.remove('translate-x-0');
+            cartOverlay.classList.add('hidden');
+        });
+
+        // Apply discount to product
+        function applyDiscount(productId, inputId) {
+            const discountInput = document.getElementById(inputId);
+            const discountMessage = document.getElementById(`discount-message-${productId.split('-')[1]}`);
+            const code = discountInput.value.trim().toUpperCase();
+            
+            if(discountCodes[code] && discountCodes[code].productIds.includes(productId)) {
+                appliedDiscounts[productId] = discountCodes[code].discount;
+                discountMessage.classList.remove('hidden');
+                
+                // Update prices for items already in cart
+                const discountedItems = cart.filter(item => item.id === productId);
+                if(discountedItems.length > 0) {
+                    updateCart();
+                }
+            } else {
+                discountMessage.textContent = 'Código no válido';
+                discountMessage.classList.add('hidden');
+                setTimeout(() => {
+                    discountMessage.textContent = 'Descuento aplicado!';
+                }, 2000);
+                discountMessage.classList.remove('hidden');
+            }
+        }
+
+        // Add item to cart
+        function addToCart(id, name, price, image) {
+            const existingItem = cart.find(item => item.id === id);
+            
+            if(existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id,
+                    name,
+                    price,
+                    image,
+                    quantity: 1
+                });
+            }
+            
+            updateCart();
+            cartPanel.classList.remove('translate-x-full');
+            cartPanel.classList.add('translate-x-0');
+            cartOverlay.classList.remove('hidden');
+        }
+
+        // Update cart UI
+        function updateCart() {
+            // Update count
+            cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            // Calculate prices
+            let subtotal = 0;
+            let totalDiscount = 0;
+            
+            // Clear cart items
+            cartItemsContainer.innerHTML = '';
+            
+            // Add items to cart
+            cart.forEach(item => {
+                const discount = appliedDiscounts[item.id] || 0;
+                const discountedPrice = item.price * (1 - discount);
+                const itemTotal = discountedPrice * item.quantity;
+                const itemDiscount = (item.price * discount) * item.quantity;
+                
+                subtotal += itemTotal;
+                totalDiscount += itemDiscount;
+                
+                const cartItemElement = document.createElement('div');
+                cartItemElement.className = 'flex items-center mb-4 pb-4 border-b';
+                cartItemElement.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded mr-4" />
+                    <div class="flex-1">
+                        <h4 class="font-medium">${item.name}</h4>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Cantidad: ${item.quantity}</span>
+                            <span>$${(discountedPrice).toFixed(2)} c/u</span>
+                        </div>
+                        ${discount > 0 ? `<div class="text-green-600 text-xs mt-1">Ahorro: $${itemDiscount.toFixed(2)}</div>` : ''}
+                    </div>
+                    <button onclick="removeItem('${item.id}')" class="text-gray-500 hover:text-red-500 ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+                cartItemsContainer.appendChild(cartItemElement);
+            });
+            
+            // Update totals
+            cartSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+            cartDiscounts.textContent = `-$${totalDiscount.toFixed(2)}`;
+            cartTotal.textContent = `$${subtotal.toFixed(2)}`;
+        }
+
+        // Remove item from cart
+        function removeItem(id) {
+            const itemIndex = cart.findIndex(item => item.id === id);
+            
+            if(itemIndex !== -1) {
+                if(cart[itemIndex].quantity > 1) {
+                    cart[itemIndex].quantity -= 1;
+                } else {
+                    cart.splice(itemIndex, 1);
+                    
+                    // Remove discount if it was applied to this item
+                    if(appliedDiscounts[id]) {
+                        delete appliedDiscounts[id];
+                    }
+                }
+                
+                updateCart();
+            }
+        }
+
+        // Checkout function - redirect to WhatsApp
+        checkoutButton.addEventListener('click', () => {
+            if(cart.length === 0) return;
+            
+            let message = `¡Hola! Estoy interesado en los siguientes productos:\n\n`;
+            
+            cart.forEach(item => {
+                const discount = appliedDiscounts[item.id] || 0;
+                const price = item.price * (1 - discount);
+                const total = price * item.quantity;
+                
+                message += `- ${item.name} (${item.quantity}x) - $${total.toFixed(2)}\n`;
+            });
+            
+            message += `\n*Subtotal:* $${cartSubtotal.textContent.substring(1)}\n`;
+            message += `*Descuentos:* -${cartDiscounts.textContent.substring(1)}\n`;
+            message += `*Total:* $${cartTotal.textContent.substring(1)}\n\n`;
+            message += `Por favor, confírmame disponibilidad y forma de pago. Gracias!`;
+            
+            // Encode the message for URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Replace with your actual WhatsApp number (format: country code + area code + number, e.g., 5491123456789)
+            const whatsappNumber = 'YOUR-PHONE-NUMBER'; /* Replace with your actual WhatsApp number */
+            
+            // Open WhatsApp chat with the message
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+            
+            // Clear cart after checkout
+            cart = [];
+            appliedDiscounts = {};
+            updateCart();
+            cartPanel.classList.add('translate-x-full');
+            cartPanel.classList.remove('translate-x-0');
+            cartOverlay.classList.add('hidden');
+        });
+    </script>
 </body>
 </html>
