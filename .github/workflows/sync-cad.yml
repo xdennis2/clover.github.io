@@ -1,0 +1,45 @@
+name: Sync CAD viewer file
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-cad.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-cad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download public DWG
+        shell: bash
+        run: |
+          mkdir -p cajas-baja-tension
+          curl -L --fail --retry 3 --retry-delay 2 \
+            -o 'cajas-baja-tension/modelo.dwg' \
+            'https://drive.google.com/uc?export=download&id=1pz4sRHBqf2dFPk9_-fcOmOTb6gFLRgDS'
+          size=$(stat -c%s 'cajas-baja-tension/modelo.dwg')
+          echo "Downloaded bytes: $size"
+          if [ "$size" -lt 1000000 ]; then
+            echo 'Downloaded file is unexpectedly small; refusing to commit.'
+            exit 1
+          fi
+
+      - name: Commit DWG to repository
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- 'cajas-baja-tension/modelo.dwg'
+          if git diff --cached --quiet; then
+            echo 'No CAD changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Add public CAD viewer file'
+          git push
