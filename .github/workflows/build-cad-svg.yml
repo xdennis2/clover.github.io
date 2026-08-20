@@ -1,0 +1,50 @@
+name: Build CAD SVG
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-cad-svg.yml'
+      - 'cajas-baja-tension/modelo.dwg'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential autoconf automake libtool pkg-config \
+            libpcre2-dev zlib1g-dev libxml2-dev libreadline-dev git
+
+      - name: Build GNU LibreDWG
+        run: |
+          git clone --depth 1 https://github.com/LibreDWG/libredwg.git /tmp/libredwg
+          cd /tmp/libredwg
+          ./autogen.sh
+          ./configure --disable-shared --enable-release
+          make -j2
+
+      - name: Convert DWG to SVG
+        run: |
+          /tmp/libredwg/programs/dwg2SVG 'cajas-baja-tension/modelo.dwg' \
+            > 'cajas-baja-tension/modelo.svg' \
+            2> 'cajas-baja-tension/modelo-svg.log'
+          test -s 'cajas-baja-tension/modelo.svg'
+          grep -q '<svg' 'cajas-baja-tension/modelo.svg'
+          ls -lh 'cajas-baja-tension/modelo.svg'
+
+      - name: Commit generated SVG
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'cajas-baja-tension/modelo.svg' 'cajas-baja-tension/modelo-svg.log'
+          git diff --cached --quiet && exit 0
+          git commit -m 'Generate static SVG from CAD'
+          git push
