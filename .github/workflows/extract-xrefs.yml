@@ -1,0 +1,30 @@
+name: Extract XREF DWGs
+
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-xrefs.yml'
+      - 'cajas-baja-tension/Cajas-Baja-Tension-WEB.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract DWGs
+        run: |
+          cd cajas-baja-tension
+          unzip -o 'Cajas-Baja-Tension-WEB.zip'
+          find . -maxdepth 2 -type f -iname '*.dwg' -print
+      - name: Commit extracted XREFs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'cajas-baja-tension/'
+          git diff --cached --quiet && exit 0
+          git commit -m 'Expose CAD references for viewer'
+          git push
