@@ -1,0 +1,58 @@
+name: Build XREF archive
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-xref-archive.yml'
+      - 'cajas-baja-tension/20260728 - Cajas Baja Tension.dwg'
+      - 'cajas-baja-tension/Nortec.dwg'
+      - 'cajas-baja-tension/Surc.dwg'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ZIP with XREF path aliases
+        run: |
+          python - <<'PY'
+          import zipfile, os
+          base='cajas-baja-tension'
+          main=os.path.join(base,'20260728 - Cajas Baja Tension.dwg')
+          north=os.path.join(base,'Nortec.dwg')
+          south=os.path.join(base,'Surc.dwg')
+          out=os.path.join(base,'Cajas-Baja-Tension-XREF.zip')
+          n_aliases=[
+              'Nortec.dwg',
+              'srvfs01/Areamantredes/Of. Técnica - Laurenti/Planos/Nortec.dwg',
+              'Areamantredes/Of. Técnica - Laurenti/Planos/Nortec.dwg',
+              'Of. Técnica - Laurenti/Planos/Nortec.dwg',
+              r'\\srvfs01\Areamantredes\Of. Técnica - Laurenti\Planos\Nortec.dwg',
+          ]
+          s_aliases=[
+              'Surc.dwg',
+              'srvfs01/Areamantredes/Of. Técnica - Laurenti/Planos/Surc.dwg',
+              'Areamantredes/Of. Técnica - Laurenti/Planos/Surc.dwg',
+              'Of. Técnica - Laurenti/Planos/Surc.dwg',
+              r'\\srvfs01\Areamantredes\Of. Técnica - Laurenti\Planos\Surc.dwg',
+          ]
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+              z.write(main,'20260728 - Cajas Baja Tension.dwg')
+              for a in n_aliases: z.write(north,a)
+              for a in s_aliases: z.write(south,a)
+          print(out, os.path.getsize(out))
+          PY
+
+      - name: Commit archive
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'cajas-baja-tension/Cajas-Baja-Tension-XREF.zip'
+          git diff --cached --quiet && exit 0
+          git commit -m 'Build XREF-compatible CAD archive'
+          git push
