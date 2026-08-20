@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>Cajas Baja Tensión · Visor CAD</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0d10;font-family:Arial,Helvetica,sans-serif}.app{height:100%;display:grid;grid-template-rows:50px 1fr 54px}.top{display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#111419;color:#fff;border-bottom:1px solid #252a31}.name{font-size:14px;font-weight:700}.sub{font-size:10px;color:#9ca3af;margin-top:2px}.badge{font-size:10px;color:#cbd5e1;border:1px solid #39414d;border-radius:999px;padding:5px 8px}.stage{position:relative;min-height:0;background:#f7f7f7;overflow:hidden;touch-action:none}.canvas{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}.canvas svg{width:100%;height:100%;display:block}.loading,.error{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:28px;background:#0b0d10;color:#d1d5db;z-index:4;font-size:13px}.error{display:none;color:#fecaca}.toolbar{display:flex;align-items:center;justify-content:center;gap:9px;background:#111419;border-top:1px solid #252a31}.toolbar button{width:42px;height:36px;border-radius:8px;border:1px solid #39414d;background:#1a1f26;color:#fff;font-size:18px;cursor:pointer}.toolbar button:active{transform:scale(.96)}@media(max-width:520px){.app{grid-template-rows:46px 1fr 50px}.badge{display:none}.name{font-size:13px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js"></script>
+</head>
+<body>
+<main class="app">
+<header class="top"><div><div class="name">Cajas Baja Tensión</div><div class="sub">20260728 · solo visualización</div></div><div class="badge">DWG</div></header>
+<section class="stage" id="stage"><div class="canvas" id="canvas"></div><div class="loading" id="loading">Preparando visor CAD…</div><div class="error" id="error"></div></section>
+<footer class="toolbar"><button id="zoomOut" aria-label="Alejar">−</button><button id="fit" aria-label="Ajustar">⌂</button><button id="zoomIn" aria-label="Acercar">+</button><button id="full" aria-label="Pantalla completa">⛶</button></footer>
+</main>
+<script type="module">
+import { Dwg_File_Type, LibreDwg } from 'https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.7.9/dist/libredwg-web.js';
+const loading=document.getElementById('loading');
+const errorBox=document.getElementById('error');
+const canvas=document.getElementById('canvas');
+let panZoom=null;
+const setStatus=t=>loading.textContent=t;
+try{
+  setStatus('Cargando motor DWG…');
+  const libredwg=await LibreDwg.create('https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.7.9/wasm/');
+  setStatus('Descargando plano…');
+  const response=await fetch('./modelo.dwg',{cache:'force-cache'});
+  if(!response.ok) throw new Error('No se pudo descargar el DWG ('+response.status+').');
+  const bytes=await response.arrayBuffer();
+  setStatus('Interpretando dibujo…');
+  const dwg=libredwg.dwg_read_data(bytes,Dwg_File_Type.DWG);
+  const db=libredwg.convert(dwg);
+  setStatus('Generando vista…');
+  const svgString=libredwg.dwg_to_svg(db);
+  const doc=new DOMParser().parseFromString(svgString,'image/svg+xml');
+  const svg=doc.documentElement;
+  svg.removeAttribute('width');svg.removeAttribute('height');
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  canvas.replaceChildren(svg);
+  libredwg.dwg_free(dwg);
+  panZoom=window.svgPanZoom(svg,{zoomEnabled:true,panEnabled:true,controlIconsEnabled:false,fit:true,center:true,minZoom:.05,maxZoom:50,dblClickZoomEnabled:true,mouseWheelZoomEnabled:true,preventMouseEventsDefault:true});
+  loading.style.display='none';
+}catch(err){
+  console.error(err);
+  loading.style.display='none';
+  errorBox.style.display='grid';
+  errorBox.textContent='No se pudo abrir el DWG en este visor. '+(err?.message||err);
+}
+document.getElementById('zoomIn').onclick=()=>panZoom?.zoomIn();
+document.getElementById('zoomOut').onclick=()=>panZoom?.zoomOut();
+document.getElementById('fit').onclick=()=>{if(panZoom){panZoom.resize();panZoom.fit();panZoom.center();}};
+document.getElementById('full').onclick=()=>document.getElementById('stage').requestFullscreen?.();
+window.addEventListener('resize',()=>{if(panZoom){panZoom.resize();panZoom.fit();panZoom.center();}});
+</script>
+</body>
+</html>
