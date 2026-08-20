@@ -17,34 +17,64 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Build and convert with persistent log
+        continue-on-error: true
         run: |
-          sudo apt-get update
+          set +e
+          LOG='cajas-baja-tension/build-cad.log'
+          : > "$LOG"
+          echo '=== START ===' >> "$LOG"
+          date -u >> "$LOG"
+
+          echo '=== INSTALL DEPS ===' >> "$LOG"
+          sudo apt-get update >> "$LOG" 2>&1
           sudo apt-get install -y build-essential autoconf automake libtool pkg-config \
-            libpcre2-dev zlib1g-dev libxml2-dev libreadline-dev git
+            libpcre2-dev zlib1g-dev libxml2-dev libreadline-dev git >> "$LOG" 2>&1
+          echo "deps_exit=$?" >> "$LOG"
 
-      - name: Build GNU LibreDWG
-        run: |
-          git clone --depth 1 https://github.com/LibreDWG/libredwg.git /tmp/libredwg
-          cd /tmp/libredwg
-          ./autogen.sh
-          ./configure --disable-shared --enable-release
-          make -j2
+          echo '=== CLONE ===' >> "$LOG"
+          rm -rf /tmp/libredwg
+          git clone --depth 1 https://github.com/LibreDWG/libredwg.git /tmp/libredwg >> "$LOG" 2>&1
+          echo "clone_exit=$?" >> "$LOG"
 
-      - name: Convert DWG to SVG
-        run: |
-          /tmp/libredwg/programs/dwg2SVG 'cajas-baja-tension/modelo.dwg' \
-            > 'cajas-baja-tension/modelo.svg' \
-            2> 'cajas-baja-tension/modelo-svg.log'
-          test -s 'cajas-baja-tension/modelo.svg'
-          grep -q '<svg' 'cajas-baja-tension/modelo.svg'
-          ls -lh 'cajas-baja-tension/modelo.svg'
+          echo '=== AUTOGEN ===' >> "$LOG"
+          cd /tmp/libredwg || exit 1
+          ./autogen.sh >> "$GITHUB_WORKSPACE/$LOG" 2>&1
+          echo "autogen_exit=$?" >> "$GITHUB_WORKSPACE/$LOG"
 
-      - name: Commit generated SVG
+          echo '=== CONFIGURE ===' >> "$GITHUB_WORKSPACE/$LOG"
+          ./configure --disable-shared --enable-release >> "$GITHUB_WORKSPACE/$LOG" 2>&1
+          echo "configure_exit=$?" >> "$GITHUB_WORKSPACE/$LOG"
+
+          echo '=== MAKE ===' >> "$GITHUB_WORKSPACE/$LOG"
+          make -j2 >> "$GITHUB_WORKSPACE/$LOG" 2>&1
+          MAKE_EXIT=$?
+          echo "make_exit=$MAKE_EXIT" >> "$GITHUB_WORKSPACE/$LOG"
+
+          echo '=== CONVERT ===' >> "$GITHUB_WORKSPACE/$LOG"
+          if [ -x /tmp/libredwg/programs/dwg2SVG ]; then
+            /tmp/libredwg/programs/dwg2SVG "$GITHUB_WORKSPACE/cajas-baja-tension/modelo.dwg" \
+              > "$GITHUB_WORKSPACE/cajas-baja-tension/modelo.svg" \
+              2>> "$GITHUB_WORKSPACE/$LOG"
+            CONVERT_EXIT=$?
+          else
+            echo 'dwg2SVG binary not found' >> "$GITHUB_WORKSPACE/$LOG"
+            CONVERT_EXIT=127
+          fi
+          echo "convert_exit=$CONVERT_EXIT" >> "$GITHUB_WORKSPACE/$LOG"
+          if [ -f "$GITHUB_WORKSPACE/cajas-baja-tension/modelo.svg" ]; then
+            ls -lh "$GITHUB_WORKSPACE/cajas-baja-tension/modelo.svg" >> "$GITHUB_WORKSPACE/$LOG" 2>&1
+          fi
+          echo '=== END ===' >> "$GITHUB_WORKSPACE/$LOG"
+          exit 0
+
+      - name: Commit log and SVG if available
+        if: always()
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add 'cajas-baja-tension/modelo.svg' 'cajas-baja-tension/modelo-svg.log'
+          git add 'cajas-baja-tension/build-cad.log'
+          if [ -f 'cajas-baja-tension/modelo.svg' ]; then git add 'cajas-baja-tension/modelo.svg'; fi
           git diff --cached --quiet && exit 0
-          git commit -m 'Generate static SVG from CAD'
+          git commit -m 'Record CAD conversion result'
           git push
