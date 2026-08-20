@@ -1,0 +1,35 @@
+name: Sync CAD ZIP
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sync-cad-zip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download CAD ZIP from Google Drive
+        run: |
+          mkdir -p cajas-baja-tension
+          curl -L --fail --retry 3 \
+            'https://drive.google.com/uc?export=download&id=1pz4sRHBqf2dFPk9_-fcOmOTb6gFLRgDS' \
+            -o 'cajas-baja-tension/Cajas-Baja-Tension-WEB.zip'
+          file 'cajas-baja-tension/Cajas-Baja-Tension-WEB.zip'
+          ls -lh 'cajas-baja-tension/Cajas-Baja-Tension-WEB.zip'
+
+      - name: Commit ZIP
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'cajas-baja-tension/Cajas-Baja-Tension-WEB.zip'
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add complete CAD ZIP with XREFs'
+          git push
