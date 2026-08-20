@@ -1,39 +1,72 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b0d10">
-  <title>Cajas Baja Tensión · Visor CAD</title>
-  <style>
-    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#0b0d10;font-family:Arial,Helvetica,sans-serif;overflow:hidden}.app{height:100%;display:grid;grid-template-rows:52px 1fr;background:#0b0d10}.bar{display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #2a2f37;background:#111419;color:#fff}.title{min-width:0}.name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sub{font-size:10px;color:#9ca3af;margin-top:2px}.tag{font-size:10px;border:1px solid #39414d;border-radius:999px;padding:5px 8px;color:#cbd5e1}.frame{position:relative;min-height:0;background:#05070a}.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}.loading{position:absolute;inset:0;display:grid;place-items:center;background:#0b0d10;color:#d1d5db;font-size:13px;z-index:2;pointer-events:none}.loading.hide{display:none}@media(max-width:520px){.app{grid-template-rows:46px 1fr}.tag{display:none}.name{font-size:13px}.sub{font-size:9px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>Cajas Baja Tensión · Visor CAD</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0d10;font-family:Arial,Helvetica,sans-serif}
+.app{height:100%;display:grid;grid-template-rows:50px 1fr 52px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#111419;color:#fff;border-bottom:1px solid #252a31}
+.name{font-size:14px;font-weight:700}.sub{font-size:10px;color:#9ca3af;margin-top:2px}.badge{font-size:10px;color:#cbd5e1;border:1px solid #39414d;border-radius:999px;padding:5px 8px}
+.stage{position:relative;min-height:0;background:#111;overflow:hidden;touch-action:none}
+#cadCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.loading,.error{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:28px;background:#0b0d10;color:#d1d5db;z-index:5;font-size:13px;line-height:1.45}
+.error{display:none;color:#fecaca}
+.toolbar{display:flex;align-items:center;justify-content:center;gap:10px;background:#111419;border-top:1px solid #252a31}
+.toolbar button{height:36px;padding:0 16px;border-radius:8px;border:1px solid #39414d;background:#1a1f26;color:#fff;font-size:13px;cursor:pointer}
+.toolbar button:active{transform:scale(.97)}
+@media(max-width:520px){.app{grid-template-rows:46px 1fr 50px}.badge{display:none}.name{font-size:13px}.toolbar button{height:34px;padding:0 13px}}
+</style>
 </head>
 <body>
-  <main class="app">
-    <header class="bar">
-      <div class="title">
-        <div class="name">Cajas Baja Tensión</div>
-        <div class="sub">20260728 · solo visualización</div>
-      </div>
-      <div class="tag">DWG</div>
-    </header>
-    <section class="frame">
-      <div class="loading" id="loading">Cargando plano…</div>
-      <iframe
-        id="cadframe"
-        title="Visor CAD Cajas Baja Tensión"
-        src="https://iframe.sharecad.org/cadframe/load?url=https%3A%2F%2Fraw.githubusercontent.com%2Fxdennis2%2Fclover.github.io%2Fmain%2Fcajas-baja-tension%2FCajas-Baja-Tension-WEB.zip"
-        scrolling="no"
-        allowfullscreen>
-      </iframe>
-    </section>
-  </main>
-  <script>
-    const f=document.getElementById('cadframe');
-    const l=document.getElementById('loading');
-    f.addEventListener('load',()=>setTimeout(()=>l.classList.add('hide'),700));
-    setTimeout(()=>l.classList.add('hide'),12000);
-  </script>
+<main class="app">
+<header class="top"><div><div class="name">Cajas Baja Tensión</div><div class="sub">20260728 · solo visualización</div></div><div class="badge">DWG</div></header>
+<section class="stage" id="stage">
+<canvas id="cadCanvas"></canvas>
+<div class="loading" id="loading">Cargando motor CAD…</div>
+<div class="error" id="error"></div>
+</section>
+<footer class="toolbar"><button id="fit">Ajustar</button><button id="full">Pantalla completa</button></footer>
+</main>
+<script type="module">
+const loading=document.getElementById('loading');
+const errorBox=document.getElementById('error');
+const canvas=document.getElementById('cadCanvas');
+const stage=document.getElementById('stage');
+let viewer=null;
+const status=t=>loading.textContent=t;
+try{
+  status('Cargando visor CAD…');
+  const core=await import('https://cdn.jsdelivr.net/npm/@cadview/core@0.5.0/+esm');
+  const dwg=await import('https://cdn.jsdelivr.net/npm/@cadview/dwg@0.2.0/+esm');
+
+  status('Cargando motor DWG…');
+  await dwg.initWasm({wasmUrl:new URL('./libredwg.wasm',location.href).href});
+
+  viewer=new core.CadViewer(canvas,{theme:'dark',initialTool:'pan',formatConverters:[dwg.dwgConverter]});
+
+  status('Descargando plano…');
+  const response=await fetch('./modelo.dwg',{cache:'force-cache'});
+  if(!response.ok) throw new Error('No se pudo descargar el DWG ('+response.status+').');
+  const buffer=await response.arrayBuffer();
+
+  status('Interpretando dibujo…');
+  await viewer.loadBuffer(buffer);
+  viewer.fitToView();
+  loading.style.display='none';
+}catch(err){
+  console.error(err);
+  loading.style.display='none';
+  errorBox.style.display='grid';
+  errorBox.textContent='No se pudo abrir el DWG: '+(err?.message||err);
+}
+
+document.getElementById('fit').onclick=()=>viewer?.fitToView();
+document.getElementById('full').onclick=()=>stage.requestFullscreen?.();
+window.addEventListener('resize',()=>setTimeout(()=>viewer?.fitToView(),100));
+</script>
 </body>
 </html>
