@@ -6,25 +6,82 @@
 <meta name="theme-color" content="#0b0d10">
 <title>Cajas Baja Tensión · Visor CAD</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0d10;font-family:Arial,Helvetica,sans-serif}.app{height:100%;display:grid;grid-template-rows:50px 1fr}.top{display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#111419;color:#fff;border-bottom:1px solid #252a31}.name{font-size:14px;font-weight:700}.sub{font-size:10px;color:#9ca3af;margin-top:2px}.badge{font-size:10px;color:#cbd5e1;border:1px solid #39414d;border-radius:999px;padding:5px 8px}.frame{position:relative;min-height:0;background:#fff}.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}.loading{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;background:#0b0d10;color:#d1d5db;font-size:13px;z-index:3}.loading.hide{display:none}@media(max-width:520px){.app{grid-template-rows:44px 1fr}.badge{display:none}.name{font-size:13px}.sub{font-size:9px}}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0d10;font-family:Arial,Helvetica,sans-serif}
+#app{position:fixed;inset:0;background:#fff;overflow:hidden}
+#cadframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.ui{position:fixed;z-index:20;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(12,15,20,.94);backdrop-filter:blur(10px);padding:6px;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.tabs{top:max(8px,env(safe-area-inset-top))}
+.actions{bottom:max(8px,env(safe-area-inset-bottom))}
+button{border:0;border-radius:8px;background:transparent;color:#d6dbe3;font:600 12px/1 Arial,sans-serif;padding:10px 12px;white-space:nowrap;cursor:pointer}
+button.active{background:#fff;color:#111827}
+button.secondary{background:#202630;color:#fff}
+.loading{position:fixed;inset:0;z-index:30;display:grid;place-items:center;text-align:center;padding:24px;background:#0b0d10;color:#d1d5db;font-size:13px;line-height:1.45}
+.loading.hide{display:none}
+.hint{position:fixed;z-index:18;top:58px;left:50%;transform:translateX(-50%);background:rgba(12,15,20,.88);color:#e5e7eb;padding:6px 10px;border-radius:999px;font-size:10px;pointer-events:none;opacity:0;transition:.25s;white-space:nowrap}
+.hint.show{opacity:1}
+@media(max-width:560px){
+  .ui{width:calc(100% - 16px);justify-content:center}
+  button{padding:10px 9px;font-size:11px;flex:1}
+  .tabs{top:max(6px,env(safe-area-inset-top))}
+  .actions{bottom:max(6px,env(safe-area-inset-bottom))}
+  .hint{top:56px}
+}
 </style>
 </head>
 <body>
-<main class="app">
-<header class="top"><div><div class="name">Cajas Baja Tensión</div><div class="sub">20260728 · solo visualización</div></div><div class="badge">DWG + XREF</div></header>
-<section class="frame">
+<div id="app">
+  <iframe id="cadframe" title="Visor CAD" scrolling="no" allow="fullscreen" allowfullscreen></iframe>
+</div>
+<div class="ui tabs" id="tabs">
+  <button class="active" data-view="completo">COMPLETO</button>
+  <button data-view="nortec">NORTEC</button>
+  <button data-view="surc">SURC</button>
+</div>
+<div class="ui actions">
+  <button class="secondary" id="fullscreen">PANTALLA COMPLETA</button>
+  <button class="secondary" id="reload">RECARGAR</button>
+</div>
+<div class="hint" id="hint">En celular, usá pantalla completa en horizontal</div>
 <div class="loading" id="loading">Cargando plano completo…</div>
-<iframe id="cadframe" title="Cajas Baja Tensión" scrolling="no" allowfullscreen></iframe>
-</section>
-</main>
 <script>
-const zipUrl=new URL('./Cajas-Baja-Tension-WEB.zip',location.href).href;
-const viewer='https://iframe.sharecad.org/cadframe/load?url='+encodeURIComponent(zipUrl);
-const f=document.getElementById('cadframe');
-const l=document.getElementById('loading');
-f.src=viewer;
-f.addEventListener('load',()=>setTimeout(()=>l.classList.add('hide'),1200));
-setTimeout(()=>l.classList.add('hide'),15000);
+const frame=document.getElementById('cadframe');
+const loading=document.getElementById('loading');
+const hint=document.getElementById('hint');
+const base=new URL('./',location.href);
+const files={
+  completo:'Cajas-Baja-Tension-WEB.zip',
+  nortec:'Nortec.dwg',
+  surc:'Surc.dwg'
+};
+let current='completo';
+function sharecadUrl(file){
+  const fileUrl=new URL(file,base).href;
+  return 'https://iframe.sharecad.org/cadframe/load?url='+encodeURIComponent(fileUrl);
+}
+function loadView(name){
+  current=name;
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  loading.classList.remove('hide');
+  loading.textContent=name==='completo'?'Cargando plano completo…':'Cargando '+name.toUpperCase()+'…';
+  frame.src=sharecadUrl(files[name]);
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>loadView(b.dataset.view)));
+frame.addEventListener('load',()=>setTimeout(()=>loading.classList.add('hide'),1100));
+setTimeout(()=>loading.classList.add('hide'),15000);
+document.getElementById('reload').onclick=()=>loadView(current);
+document.getElementById('fullscreen').onclick=async()=>{
+  try{
+    await document.documentElement.requestFullscreen?.();
+    try{await screen.orientation?.lock?.('landscape');}catch(e){}
+    hint.classList.add('show');
+    setTimeout(()=>hint.classList.remove('show'),2600);
+  }catch(e){}
+};
+if(matchMedia('(max-width:560px)').matches){
+  setTimeout(()=>{hint.classList.add('show');setTimeout(()=>hint.classList.remove('show'),3500)},1800);
+}
+loadView('completo');
 </script>
 </body>
 </html>
